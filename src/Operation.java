@@ -27,7 +27,7 @@ public class Operation {
     private int opType; // 0:insert, 1:delete
 
     /**
-     * atomの識別子を示す文字列（形式: "X:Y:Z"）
+     * voxelの識別子を示す文字列（形式: "X:Y:Z"）
      */
     private String posID;
 
@@ -40,7 +40,7 @@ public class Operation {
      * 指定されたタイプの操作オブジェクトを作成する．
      * @param id 操作を作成したSiteの識別子
      * @param opType 操作のタイプ
-     * @param posID atomの識別子
+     * @param posID voxelの識別子
      */
     public Operation(int id, int opType, String posID) {
         this.id = id;
@@ -68,8 +68,8 @@ public class Operation {
     }
 
     /**
-     * atomの識別子を返す．
-     * @return atomの識別子
+     * voxelの識別子を返す．
+     * @return voxelの識別子
      */
     public String getPosID() {
         return this.posID;

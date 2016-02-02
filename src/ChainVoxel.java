@@ -27,23 +27,23 @@ import org.xml.sax.SAXException;
  * ChainVoxelを実装したクラス.
  * @author kengo92i
  */
-public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation> {
+public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operation> {
     /**
-     * posIDに対応するatomのリストを管理するTreeMap
+     * posIDに対応するvoxelのリストを管理するTreeMap
      */
-    private TreeMap<String, ArrayList<Atom>> atoms;
+    private TreeMap<String, ArrayList<Voxel>> atoms;
 
     /**
-     * posIDに対応する負のatomを管理するTreeMap
+     * posIDに対応する負のvoxelを管理するTreeMap
      */
-    private TreeMap<String, Atom> negativeAtoms;
+    private TreeMap<String, Voxel> negativeVoxels;
 
     /**
      * ChainVoxelのコンストラクタ
      */
     public ChainVoxel() {
-        this.atoms = new TreeMap<String, ArrayList<Atom>>();
-        this.negativeAtoms = new TreeMap<String, Atom>();
+        this.atoms = new TreeMap<String, ArrayList<Voxel>>();
+        this.negativeVoxels = new TreeMap<String, Voxel>();
     }
 
     /**
@@ -65,7 +65,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
     }
 
     /**
-     * ChainVoxel内にatomを挿入するメソッド
+     * ChainVoxel内にvoxelを挿入するメソッド
      * @param op 操作オブジェクト
      * @see Operation
      */
@@ -73,25 +73,25 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
         int id = op.getId();
         String posID = op.getPosID();
         long timestamp = op.getTimestamp();
-        Atom insertAtom = new Atom(id, timestamp);
+        Voxel insertVoxel = new Voxel(id, timestamp);
 
-        ArrayList<Atom> atomList = this.getAtomList(posID);
+        ArrayList<Voxel> voxelList = this.getVoxelList(posID);
 
-        // step1: 負のatomの影響があるか調べる
-        // 負のatomより新しいtsの場合は以降の処理に進む，そうではない場合は，ここで終了
-        Atom negativeAtom = negativeAtoms.get(posID);
-        if (negativeAtom != null && negativeAtom.getTimestamp() >= timestamp) {
+        // step1: 負のvoxelの影響があるか調べる
+        // 負のvoxelより新しいtsの場合は以降の処理に進む，そうではない場合は，ここで終了
+        Voxel negativeVoxel = negativeVoxels.get(posID);
+        if (negativeVoxel != null && negativeVoxel.getTimestamp() >= timestamp) {
             return;
         }
 
-        // step2: Node(atom)を挿入する
-        atomList.add(insertAtom);
-        Collections.sort(atomList, new ChainVoxelComparator());
+        // step2: insertVoxelを挿入する
+        voxelList.add(insertVoxel);
+        Collections.sort(voxelList);
         return;
     }
 
     /**
-     * ChainVoxel内の指定したatomを削除するメソッド
+     * ChainVoxel内の指定したvoxelを削除するメソッド
      * @param op 操作オブジェクト
      * @see Operation
      */
@@ -100,38 +100,51 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
         String posID = op.getPosID();
         long timestamp = op.getTimestamp();
 
-        // step1: 負のatomをnegativeAtomsに追加・更新
-        Atom negativeAtom = negativeAtoms.get(posID);
-        if (negativeAtom == null || negativeAtom.getTimestamp() < timestamp) {
-            negativeAtoms.put(posID, new Atom(timestamp));
+        // step1: 負のvoxelをnegativeVoxelsに追加・更新
+        Voxel negativeVoxel = negativeVoxels.get(posID);
+        if (negativeVoxel == null || negativeVoxel.getTimestamp() < timestamp) {
+            negativeVoxels.put(posID, new Voxel(timestamp));
         }
 
-        ArrayList<Atom> atomList = this.getAtomList(posID);
+        ArrayList<Voxel> voxelList = this.getVoxelList(posID);
 
-        // step2: 負のatomより古いatomを削除する
-        negativeAtom = negativeAtoms.get(posID);
-        for (int i = atomList.size() - 1; i >= 0; --i) { // 先頭から削除するとイテレータがおかしくなる
-            if (negativeAtom.getTimestamp() >= atomList.get(i).getTimestamp()) {
-                atomList.remove(i); 
+        // step2: 負のvoxelより古いvoxelを削除する
+        negativeVoxel = negativeVoxels.get(posID);
+        for (int i = voxelList.size() - 1; i >= 0; --i) { // 先頭から削除するとイテレータがおかしくなる
+            if (negativeVoxel.getTimestamp() >= voxelList.get(i).getTimestamp()) {
+                voxelList.remove(i); 
             }
         }
 
-        Collections.sort(atomList, new ChainVoxelComparator());
+        Collections.sort(voxelList);
         return;
     }
 
     /**
-     * 指定したposIDに対応するatomのリストを返すメソッド
-     * @param posID atomの識別子
-     * @return posIDに対応するatomのリスト
+     * 指定したposIDに対応するmainVoxelを返すメソッド
+     * @param posID voxelの識別子
+     * @return posIDに対応するvoxel，posIDに対応するものがない場合はnullを返す．
      */
-    public ArrayList<Atom> getAtomList(String posID) {
-        ArrayList<Atom> atomList = this.atoms.get(posID);
-        if (atomList == null) {
-            atomList = new ArrayList<Atom>();
-            this.atoms.put(posID, atomList);
+    public Voxel getVoxel(String posID) {
+        ArrayList<Voxel> voxelList = this.atoms.get(posID);
+        if (voxelList == null) {
+            return null;
         }
-        return atomList;
+        return voxelList.get(0); // 先頭のvoxelがmainVoxel
+    }
+
+    /**
+     * 指定したposIDに対応するvoxelのリストを返すメソッド
+     * @param posID voxelの識別子
+     * @return posIDに対応するvoxelのリスト
+     */
+    public ArrayList<Voxel> getVoxelList(String posID) {
+        ArrayList<Voxel> voxelList = this.atoms.get(posID);
+        if (voxelList == null) {
+            voxelList = new ArrayList<Voxel>();
+            this.atoms.put(posID, voxelList);
+        }
+        return voxelList;
     }
 
     /**
@@ -140,16 +153,16 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
      */
     public int size() {
         int totalSize = 0;
-        for (Map.Entry<String, ArrayList<Atom>> e : this.atoms.entrySet()) {
+        for (Map.Entry<String, ArrayList<Voxel>> e : this.atoms.entrySet()) {
            totalSize += e.getValue().size(); 
         }
         return totalSize;
     }
 
     /**
-     * 指定されたposIDのatom数を返すメソッド
-     * @param posID atomの識別子
-     * @return posIDに対応するatom数
+     * 指定されたposIDのvoxel数を返すメソッド
+     * @param posID voxelの識別子
+     * @return posIDに対応するvoxel数
      */
     public int size(String posID) {
         return this.atoms.get(posID).size();
@@ -167,9 +180,9 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
             Element rootElement = document.getDocumentElement();
             Element sceneElement = (Element) rootElement.getElementsByTagName("visual_scene").item(0);
 
-            for (Map.Entry<String, ArrayList<Atom>> e : this.atoms.entrySet()) {
-                ArrayList<Atom> atomList = e.getValue(); 
-                if (atomList.size() == 0) continue;
+            for (Map.Entry<String, ArrayList<Voxel>> e : this.atoms.entrySet()) {
+                ArrayList<Voxel> voxelList = e.getValue(); 
+                if (voxelList.size() == 0) continue;
                 String posID = e.getKey();
                 Element nodeElement = this.createNodeElement(document, posID);
                 sceneElement.appendChild(nodeElement);
@@ -196,9 +209,9 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
     }
 
     /**
-     * 立方体を表すElement型のオブジェクトを返す
+     * 立方体を表すElement型のオブジェクトを作成する
      * @param document 対象とするXML文章
-     * @param posID atomの識別子
+     * @param posID voxelの識別子
      * @return 立方体を表すElement型のオブジェクト
      * @see ChainVoxel#exportCollada
      */
@@ -227,14 +240,14 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
      * ChainVoxelの状態を表示する
      */
     public void show() {
-        for (Map.Entry<String, ArrayList<Atom>> e : this.atoms.entrySet()) {
+        for (Map.Entry<String, ArrayList<Voxel>> e : this.atoms.entrySet()) {
             if (e.getValue().size() == 0) continue;
             System.out.print("|" + e.getKey()+ "|");
-            ArrayList<Atom> atomList = e.getValue();
-            int n = atomList.size();
-            for (Atom atom : atomList) {
-                String id = Integer.toString(atom.getId());
-                String timestamp = Long.toString(atom.getTimestamp());
+            ArrayList<Voxel> voxelList = e.getValue();
+            int n = voxelList.size();
+            for (Voxel voxel : voxelList) {
+                String id = Integer.toString(voxel.getId());
+                String timestamp = Long.toString(voxel.getTimestamp());
                 System.out.print(" -> (" + id + "," + timestamp + ")"); 
             }
             System.out.println();
@@ -248,45 +261,14 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Atom>>, Operation
      */
     public static void main(String[] args) {
         ChainVoxel cv = new ChainVoxel(); 
-        cv.apply(new Operation(1, Operation.INSERT, "1:1:1"));
+        cv.apply(new Operation(5, Operation.INSERT, "1:1:1"));
         cv.apply(new Operation(2, Operation.INSERT, "1:1:1"));
         cv.apply(new Operation(3, Operation.INSERT, "1:1:1"));
         cv.apply(new Operation(3, Operation.DELETE, "1:1:1"));
-        cv.apply(new Operation(4, Operation.INSERT, "1:1:1"));
         cv.apply(new Operation(4, Operation.INSERT, "0:1:1"));
         cv.apply(new Operation(4, Operation.INSERT, "0:0:0"));
+        cv.apply(new Operation(4, Operation.INSERT, "1:1:1"));
         cv.show();
         cv.exportCollada("sample");
-    }
-}
-
-/**
- * ChainVoxelのための比較器
- */
-class ChainVoxelComparator implements Comparator<Atom> {
-    /**
-     * Atomをタイムスタンプの昇順にソートする．同じタイムスタンプの場合は識別子の昇順で順位付け． 
-     * @param l Atom型
-     * @param r Atom型
-     */
-    @Override
-    public int compare(Atom l, Atom r) { 
-        if (l.getTimestamp() < r.getTimestamp()) {
-            return -1;
-        }
-        else if (l.getTimestamp() > r.getTimestamp()) {
-            return 1;
-        }
-        else {
-            if (l.getId() < r.getId()) {
-                return -1;
-            }
-            else if (l.getId() > r.getId()) {
-                return 1; 
-            }
-            else {
-                return 0;
-            }
-        }
     }
 }

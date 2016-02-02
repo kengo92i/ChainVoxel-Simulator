@@ -15,7 +15,7 @@ SRCDIR		= src
 OBJDIR		= bin
 JAVADOCDIR 	= javadoc
 OBJS		= \
-	${OBJDIR}/Atom.class \
+	${OBJDIR}/Voxel.class \
 	${OBJDIR}/ChainVoxel.class \
 	${OBJDIR}/CRDT.class \
 	${OBJDIR}/OperationQueue.class \
