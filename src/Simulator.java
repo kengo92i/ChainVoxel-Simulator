@@ -62,7 +62,7 @@ public class Simulator {
 			}
 
 			for (Site site : this.sites) {
-				int res = site.executeOperation();
+				int res = site.applyOperation();
 				System.out.println("site" + site.getSiteId() + ".size() = " + res);
 			}
 

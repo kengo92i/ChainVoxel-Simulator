@@ -116,7 +116,7 @@ public class Site extends Thread {
 	 * @see ChainVoxel
 	 * @see Operation
 	 */
-	public int executeOperation() {
+	public int applyOperation() {
 		while (!opq.isEmpty(this.id)) {
 			Operation op = receive();
 			chainVoxel.apply(op);
