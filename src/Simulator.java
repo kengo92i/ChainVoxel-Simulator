@@ -42,37 +42,46 @@ public class Simulator {
      * @param args コマンドライン引数
      */
     public void run(String[] args) { 		
-		this.numberOfSites = Integer.parseInt(args[0]);
-		this.numberOfOperations = Integer.parseInt(args[1]);
-		this.limitOfRange = Integer.parseInt(args[2]);
-		
-		this.opq = new OperationQueue(numberOfSites);
+    	this.numberOfSites = Integer.parseInt(args[0]);
+    	this.numberOfOperations = Integer.parseInt(args[1]);
+    	this.limitOfRange = Integer.parseInt(args[2]);
+    	while (this.numberOfOperations <= 10000) {
 
-		this.sites = new ArrayList<Site>();
-		
-		try {
-			for (int i = 0; i < this.numberOfSites; i++) {
-				Site site = new Site(i, opq, numberOfOperations, limitOfRange);
-				site.start();
-				this.sites.add(site);
+    		this.opq = new OperationQueue(numberOfSites);
+
+    		this.sites = new ArrayList<Site>();
+
+    		try {
+    			for (int i = 0; i < this.numberOfSites; i++) {
+    				Site site = new Site(i, opq, numberOfOperations, limitOfRange);
+    				site.start();
+    				this.sites.add(site);
+    			}
+
+    			for (Site site : this.sites) {
+    				site.join();
+    			}
+
+    			System.out.println(
+    					numberOfOperations * this.numberOfSites + 
+    					" " + sites.get(0).numberOfSteps + " " + 
+    					sites.get(0).numberOfMessages * this.numberOfSites);
+				/*
+				for (Site site : this.sites) {
+					int res = site.applyOperation();
+					System.out.println("site" + site.getSiteId() + ".size() = " + res);
+				}
+				*/
+
+				//System.out.println("exit(0);");
+			} catch (RuntimeException re) {
+				re.printStackTrace();
+			} catch (InterruptedException ie) {
+				ie.printStackTrace();
 			}
-
-			for (Site site : this.sites) {
-				site.join();
-			}
-
-			for (Site site : this.sites) {
-				int res = site.applyOperation();
-				System.out.println("site" + site.getSiteId() + ".size() = " + res);
-			}
-
-			System.out.println("exit(0);");
-		} catch (RuntimeException re) {
-			re.printStackTrace();
-		} catch (InterruptedException ie) {
-			ie.printStackTrace();
+			this.numberOfOperations += 100;
 		}
-    }
+	}
 
 
     /**

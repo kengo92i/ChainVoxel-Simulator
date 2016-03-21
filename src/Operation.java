@@ -16,6 +16,16 @@ public class Operation {
     public static final int DELETE = 1;
 
     /**
+     * requestを示す定数（２層コミットのために使用）
+     */
+    public static final int REQUEST = 127;
+
+    /**
+     * 確認応答を示す定数（２層コミットのために使用） 
+     */
+    public static final int ACK = 128;
+
+    /**
      * 操作を行なったSiteの識別子
      */
     private int id;
