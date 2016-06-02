@@ -16,6 +16,21 @@ public class Operation {
     public static final int DELETE = 1;
 
     /**
+     * appendEntriesを示す定数（Raftのために使用）
+     */
+    public static final int APPEND_ENTRIES = 124;
+
+    /**
+     * requestVoteを示す定数（Raftのために使用）
+     */
+    public static final int REQUEST_VOTE = 125;
+
+    /**
+     * VOTEを示す定数（Raftのために使用） 
+     */
+    public static final int VOTE = 126;
+
+    /**
      * requestを示す定数（２層コミットのために使用）
      */
     public static final int REQUEST = 127;
