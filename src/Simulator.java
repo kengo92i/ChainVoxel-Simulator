@@ -45,6 +45,7 @@ public class Simulator {
         this.numberOfSites = Integer.parseInt(args[0]);
         this.numberOfOperations = Integer.parseInt(args[1]);
         this.limitOfRange = Integer.parseInt(args[2]);
+        //while (this.numberOfOSites <= 100) {
         while (this.numberOfOperations <= 10000) {
 
             this.opq = new OperationQueue(numberOfSites);
@@ -61,11 +62,17 @@ public class Simulator {
                 for (Site site : this.sites) {
                     site.join();
                 }
-
+                /*
                 System.out.println(
-                   numberOfOperations * this.numberOfSites + 
+                   this.numberOfSites + 
                    " " + sites.get(0).numberOfSteps + " " + 
                    sites.get(0).numberOfMessages * this.numberOfSites);
+                */
+                System.out.println(
+                   this.numberOfOperations * this.numberOfSites + 
+                   " " + sites.get(0).numberOfSteps + " " + 
+                   sites.get(0).numberOfMessages);
+                
                 /*
                 for (Site site : this.sites) {
                     int res = site.applyOperation();
@@ -73,13 +80,13 @@ public class Simulator {
                 }
                 */
 
-                //System.out.println("exit(0);");
             } catch (RuntimeException re) {
                 re.printStackTrace();
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
             }
             this.numberOfOperations += 100;
+            //this.numberOfSites += 1;
         }
     }
 

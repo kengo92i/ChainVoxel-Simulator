@@ -17,26 +17,31 @@ public class Operation {
 
     /**
      * appendEntriesを示す定数（Raftのために使用）
+     * @see Site#runBehaviorOfRaft
      */
     public static final int APPEND_ENTRIES = 124;
 
     /**
      * requestVoteを示す定数（Raftのために使用）
+     * @see Site#runBehaviorOfRaft
      */
     public static final int REQUEST_VOTE = 125;
 
     /**
      * VOTEを示す定数（Raftのために使用） 
+     * @see Site#runBehaviorOfRaft
      */
     public static final int VOTE = 126;
 
     /**
      * requestを示す定数（２層コミットのために使用）
+     * @see Site#runBehaviorOfTwoPhaseCommit
      */
     public static final int REQUEST = 127;
 
     /**
      * 確認応答を示す定数（２層コミットのために使用） 
+     * @see Site#runBehaviorOfTwoPhaseCommit
      */
     public static final int ACK = 128;
 

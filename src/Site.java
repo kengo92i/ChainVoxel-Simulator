@@ -112,7 +112,7 @@ public class Site extends Thread {
     }
     
     /**
-     * The method is to delay a Site initiation.
+     * Siteに遅延を発生させるメソッド
      */
     public void delay() {
         try {
@@ -177,26 +177,16 @@ public class Site extends Thread {
         return operationList;
     }
 
-    /**
-     * Siteの動作を記述するメソッド
-     * {@inheritDoc}
-     */
-    @Override
-    public void run() {    
-        //this.delay();     
-        /*
-        // ChainVoxel時のSiteの振る舞い
-        int numberOfSites = this.opq.getNumberOfSites();
-        for (int i = 0; i < this.numberOfOperations; ++i) {
-            Operation op = this.generateRandomOperation();
-            this.chainVoxel.apply(op); // local operation
-            this.broadcast(op); // remote operation
-            this.numberOfSteps++;
-            this.numberOfMessages += numberOfSites - 1;
-        }
-        */
 
-        // Raft 時のsiteの振る舞い
+    /**
+     * Raft 時のsiteの振る舞いを実行する<br>
+     * <br>
+     * 全ての操作をRaft に基づいて実行する．siteの故障は起きないためLeaderの選出は１度しか行わない．<br>
+     * また，一貫性の収束にかかるステップ数とメッセージ数の評価が目的のため，ログレプリケーションやハートビートといた操作も考えない．<br>
+     * Raftの場合は全ての操作をLeaderを介して行うため，Leaderのメッセージ数を測定することで総メッセージ数が測定できる．
+     * @see Operation
+     */
+    private void runBehaviorOfRaft() {
         // Leaderの選出 
         int numberOfSites = this.opq.getNumberOfSites();
         if (this.id == 0) { // idが0の人がCandidateになる
@@ -210,7 +200,7 @@ public class Site extends Thread {
             // step2: Followerからの投票を待つ
             this.waitReceiveOperation(numberOfSites);
             this.numberOfSteps++;
-            this.numberOfMessages += numberOfSites / 2 + 1; // (Leaderになるためには過半数の合意が必要)
+            this.numberOfMessages += numberOfSites; // (Leaderになるためには過半数の合意が必要)
 
             // step3: FollowerにLeaderになったことを報告
             Operation appendEntries = new Operation(this.id, Operation.APPEND_ENTRIES, "");
@@ -262,9 +252,16 @@ public class Site extends Thread {
                 this.numberOfMessages++;
             }
         }
+        return;
+    }
 
-        /*
-        // two-phase commit 時のsiteの振る舞い
+    /**
+     * two-phase commit 時のsiteの振る舞いを実行する <br>
+     * <br>
+     * 全ての操作を２層コミットに基づいて実行する．siteが故障することは考えない．
+     * @see Operation
+     */
+    private void runBehaviorOfTwoPhaseCommit() {
         int numberOfSites = this.opq.getNumberOfSites();
         int maxTurn = this.numberOfOperations * numberOfSites;
         for (int turn = 0; turn < maxTurn; ++turn) {
@@ -310,6 +307,40 @@ public class Site extends Thread {
                 this.numberOfSteps++;
             }
         }
-        */
+
+        return;
+    }
+
+    /**
+     * ChainVoxel時のSiteの振る舞いを実行する
+     * @see ChainVoxel
+     * @see Operation
+     */
+    private void runBehaviorOfChainVoxel() {
+        int numberOfSites = this.opq.getNumberOfSites();
+        for (int i = 0; i < this.numberOfOperations; ++i) {
+            Operation op = this.generateRandomOperation();
+            this.chainVoxel.apply(op); // local operation
+            this.broadcast(op); // remote operation
+            this.numberOfSteps++;
+            this.numberOfMessages += numberOfSites - 1;
+        }
+
+        return;
+    }
+
+    /**
+     * Siteの動作を記述するメソッド
+     * {@inheritDoc}
+     */
+    @Override
+    public void run() {    
+        //this.delay();     
+        
+        this.runBehaviorOfChainVoxel();
+        // this.runBehaviorOfTwoPhaseCommit();
+        // this.runBehaviorOfRaft();        
+
+        return;
     }
 }

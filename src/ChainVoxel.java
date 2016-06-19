@@ -24,7 +24,11 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
 /**
- * ChainVoxelを実装したクラス.
+ * ChainVoxelを実装したクラス．<br>
+ * <br>
+ * negativeVoxelのvoxelチェインへの追加処理を簡略化するために，<br>
+ * negativeVoxelをposIDに対応するvoxelチェインとは独立して管理する実装になっています．<br>
+ * voxelチェインはこのクラスではvoxelのリストとして実装されています．
  * @author kengo92i
  */
 public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operation> {
@@ -48,6 +52,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
 
     /**
      * 操作オブジェクトに対応する操作を実行するメソッド
+     * ChainVoxelに対する操作はapplyメソッドを用いて実行することを推奨しています．
      * @param op 操作オブジェクト
      */
     public void apply(Operation op) {
@@ -81,7 +86,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
         // 負のvoxelより新しいtsの場合は以降の処理に進む，そうではない場合は，ここで終了
         Voxel negativeVoxel = negativeVoxels.get(posID);
         if (negativeVoxel != null && negativeVoxel.getTimestamp() >= timestamp) {
-            return;
+            return; // 負のvoxelより前に挿入する操作は無駄な操作であるため
         }
 
         // step2: insertVoxelを挿入する
@@ -121,22 +126,24 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
     }
 
     /**
-     * 指定したposIDに対応するmainVoxelを返すメソッド
+     * 指定したposIDに対応するprimaryVoxelを返すメソッド
      * @param posID voxelの識別子
      * @return posIDに対応するvoxel，posIDに対応するものがない場合はnullを返す．
+     * @see Voxel
      */
     public Voxel getVoxel(String posID) {
         ArrayList<Voxel> voxelList = this.atoms.get(posID);
         if (voxelList == null) {
             return null;
         }
-        return voxelList.get(0); // 先頭のvoxelがmainVoxel
+        return voxelList.get(0); // 先頭のvoxelがprimaryVoxel
     }
 
     /**
      * 指定したposIDに対応するvoxelのリストを返すメソッド
      * @param posID voxelの識別子
      * @return posIDに対応するvoxelのリスト
+     * @see Voxel
      */
     public ArrayList<Voxel> getVoxelList(String posID) {
         ArrayList<Voxel> voxelList = this.atoms.get(posID);
