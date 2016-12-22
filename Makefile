@@ -18,9 +18,11 @@ OBJS		= \
 	${OBJDIR}/Voxel.class \
 	${OBJDIR}/ChainVoxel.class \
 	${OBJDIR}/CRDT.class \
+	${OBJDIR}/GroupEntry.class \
 	${OBJDIR}/OperationQueue.class \
 	${OBJDIR}/Operation.class \
 	${OBJDIR}/Simulator.class \
+	${OBJDIR}/StructureTable.class \
 	${OBJDIR}/Site.class 
 SOURCES		= ${OBJS:${OBJDIR}/%.class=${SRCDIR}/%.java}
 COMPILER	= javac

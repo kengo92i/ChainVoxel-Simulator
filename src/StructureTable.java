@@ -23,14 +23,14 @@ public class StructureTable {
     /**
      * voxel(posID)が所属しているグループ(gid, ts)を管理するテーブル
      */
-    TreeMap<String, TreeSet<GroupEntry<String, Integer>>> groupEntriesTable;
+    TreeMap<String, TreeSet<GroupEntry<String, Long>>> groupEntriesTable;
 
     /**
      * Structure Table のコンストラクタ
      */
     public StructureTable() {
         this.groupMembersTable = new TreeMap<String, TreeSet<String>>(); 
-        this.groupEntriesTable = new TreeMap<String, TreeSet<GroupEntry<String, Integer>>>();
+        this.groupEntriesTable = new TreeMap<String, TreeSet<GroupEntry<String, Long>>>();
     }
 
     /**
@@ -53,15 +53,15 @@ public class StructureTable {
      * @param gid グループ識別子
      * @see Operation
      */
-    public void join(int ts, String posID, String gid) {
-        GroupEntry<String, Integer> aGroupEntry = new GroupEntry<String, Integer>(gid, ts);
+    public void join(long ts, String posID, String gid) {
+        GroupEntry<String, Long> aGroupEntry = new GroupEntry<String, Long>(gid, ts);
         if (!this.groupMembersTable.containsKey(gid) || Math.abs(this.getTimestamp(posID, gid)) >= ts) {
             return;
         }
         
         // groupEntriesTable に GroupEntry(gid, ts) を追加
         if (!this.groupEntriesTable.containsKey(posID)) {
-            this.groupEntriesTable.put(posID, new TreeSet<GroupEntry<String, Integer>>());
+            this.groupEntriesTable.put(posID, new TreeSet<GroupEntry<String, Long>>());
         }
         this.groupEntriesTable.get(posID).add(aGroupEntry); 
 
@@ -69,7 +69,7 @@ public class StructureTable {
         this.groupMembersTable.get(gid).add(posID);
 
         // タイムスタンプの値を最新の値に更新する
-        int maxTs = Math.max(ts, this.getTimestamp(posID, gid));
+        long maxTs = Math.max(ts, this.getTimestamp(posID, gid));
         this.setTimestamp(maxTs, posID, gid);
     }
 
@@ -81,8 +81,8 @@ public class StructureTable {
      * @param gid グループ識別子
      * @see Operation
      */
-    public void leave(int sid, int ts, String posID, String gid) {
-        GroupEntry<String, Integer> aGroupEntry = new GroupEntry<String, Integer>(gid, ts);
+    public void leave(int sid, long ts, String posID, String gid) {
+        GroupEntry<String, Long> aGroupEntry = new GroupEntry<String, Long>(gid, ts);
         if (!this.groupEntriesTable.get(posID).contains(aGroupEntry) || Math.abs(this.getTimestamp(posID, gid)) >= ts) {
             return;
         } 
@@ -91,7 +91,7 @@ public class StructureTable {
         this.groupMembersTable.get(gid).remove(posID);
 
         // タイムスタンプの更新 + tombstone化
-        int minTs = Math.min(-1 * ts, this.getTimestamp(posID, gid));
+        long minTs = Math.min(-1L * ts, this.getTimestamp(posID, gid));
         this.setTimestamp(minTs, posID, gid);
     }
 
@@ -109,7 +109,7 @@ public class StructureTable {
      * @param posID voxel識別子
      * @return グループの集合
      */
-    public TreeSet<GroupEntry<String, Integer>> getGroupEntriesSet(String posID) {
+    public TreeSet<GroupEntry<String, Long>> getGroupEntriesSet(String posID) {
         return this.groupEntriesTable.get(posID);
     }
 
@@ -119,11 +119,11 @@ public class StructureTable {
      * @param gid グループ識別子
      * @return posIDが関連しているgidのタイムスタンプ，存在しない場合は0を返す．
      */
-    private int getTimestamp(String posID, String gid) {
-        TreeSet<GroupEntry<String, Integer>> groupEntries = groupEntriesTable.get(posID);
+    private long getTimestamp(String posID, String gid) {
+        TreeSet<GroupEntry<String, Long>> groupEntries = groupEntriesTable.get(posID);
         if (groupEntries == null) { return 0; }
 
-        for (GroupEntry<String, Integer> aGroupEntry : groupEntries) {
+        for (GroupEntry<String, Long> aGroupEntry : groupEntries) {
             if (!Objects.equals(aGroupEntry.getKey(), gid)) {
                 continue;
             }
@@ -139,11 +139,11 @@ public class StructureTable {
      * @param gid グループ識別子
      * @return 値の更新に成功した場合はtrueを返す．失敗した場合はfalseを返す．
      */
-    private boolean setTimestamp(int ts, String posID, String gid) {
-        TreeSet<GroupEntry<String, Integer>> groupEntries = groupEntriesTable.get(posID);
+    private boolean setTimestamp(long ts, String posID, String gid) {
+        TreeSet<GroupEntry<String, Long>> groupEntries = groupEntriesTable.get(posID);
         if (groupEntries == null) { return false; }
 
-        for (GroupEntry<String, Integer> aGroupEntry : groupEntries) {
+        for (GroupEntry<String, Long> aGroupEntry : groupEntries) {
             if (Objects.equals(aGroupEntry.getKey(), gid)) {
                 aGroupEntry.setValue(ts); 
                 return true;
@@ -168,10 +168,10 @@ public class StructureTable {
      * @return グループ化中ならばtrue，そうでないならfalseを返す．
      */
     public boolean isGrouped(String posID) {
-        TreeSet<GroupEntry<String, Integer>> groupEntries = groupEntriesTable.get(posID);
+        TreeSet<GroupEntry<String, Long>> groupEntries = groupEntriesTable.get(posID);
         if (groupEntries == null) { return false; }
 
-        for (GroupEntry<String, Integer> aGroupEntry : groupEntries) {
+        for (GroupEntry<String, Long> aGroupEntry : groupEntries) {
             if (aGroupEntry.getValue() > 0) {
                 return true;
             }
@@ -190,7 +190,7 @@ public class StructureTable {
         System.out.println("");
 
         System.out.println("groupEntriesTable:");
-        for (Map.Entry<String, TreeSet<GroupEntry<String, Integer>>> entry : this.groupEntriesTable.entrySet()) {
+        for (Map.Entry<String, TreeSet<GroupEntry<String, Long>>> entry : this.groupEntriesTable.entrySet()) {
             System.out.println("| " + entry.getKey() + " | -> " + entry.getValue());
         }
         System.out.println("---\n");
@@ -222,30 +222,30 @@ public class StructureTable {
         stt.create(gids.get(0));
         stt.create(gids.get(0)); // 既にあるグループを作成
 
-        stt.join(1, posIDs.get(0), gids.get(0));
-        stt.join(2, posIDs.get(1), gids.get(0));
-        stt.join(3, posIDs.get(2), gids.get(0));
-        stt.leave(1, 4, posIDs.get(1), gids.get(0));
+        stt.join(1L, posIDs.get(0), gids.get(0));
+        stt.join(2L, posIDs.get(1), gids.get(0));
+        stt.join(3L, posIDs.get(2), gids.get(0));
+        stt.leave(1, 4L, posIDs.get(1), gids.get(0));
         stt.show("正常な参加・脱退");
 
-        stt.join(5, posIDs.get(0), gids.get(1)); // 存在しないグループへの参加
-        stt.leave(1, 5, posIDs.get(1), gids.get(1)); // 参加していないグループからの脱退
+        stt.join(5L, posIDs.get(0), gids.get(1)); // 存在しないグループへの参加
+        stt.leave(1, 5L, posIDs.get(1), gids.get(1)); // 参加していないグループからの脱退
         stt.show("不正な参加・脱退");
 
         stt.create(gids.get(1));
         stt.create(gids.get(2));
         stt.create(gids.get(3));
-        stt.join(6, posIDs.get(0), gids.get(1));
-        stt.join(7, posIDs.get(3), gids.get(3));
-        stt.leave(1, 8, posIDs.get(3), gids.get(3));
+        stt.join(6L, posIDs.get(0), gids.get(1));
+        stt.join(7L, posIDs.get(3), gids.get(3));
+        stt.leave(1, 8L, posIDs.get(3), gids.get(3));
         stt.show("グループの追加");
 
-        stt.join(8, posIDs.get(1), gids.get(2));
-        stt.join(9, posIDs.get(1), gids.get(2));
-        stt.join(7, posIDs.get(1), gids.get(2));
-        stt.leave(1, 8, posIDs.get(0), gids.get(0));
-        stt.leave(1, 10, posIDs.get(0), gids.get(0));
-        stt.leave(1, 11, posIDs.get(0), gids.get(1));
+        stt.join(8L, posIDs.get(1), gids.get(2));
+        stt.join(9L, posIDs.get(1), gids.get(2));
+        stt.join(7L, posIDs.get(1), gids.get(2));
+        stt.leave(1, 8L, posIDs.get(0), gids.get(0));
+        stt.leave(1, 10L, posIDs.get(0), gids.get(0));
+        stt.leave(1, 11L, posIDs.get(0), gids.get(1));
         stt.show("複数のjoin・leaveの収束結果");
 
         for (int i = 0; i < 5; ++i) {

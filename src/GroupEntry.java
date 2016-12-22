@@ -53,12 +53,12 @@ public class GroupEntry<K, V> extends SimpleEntry<K, V> implements Comparable<Gr
     }
 
     public static void main(String[] args) {
-        TreeSet<GroupEntry<String, Integer>> set = new TreeSet<GroupEntry<String, Integer>>();
-        set.add(new GroupEntry<String, Integer>("a", 1));
-        set.add(new GroupEntry<String, Integer>("abc", 5));
+        TreeSet<GroupEntry<String, Long>> set = new TreeSet<GroupEntry<String, Long>>();
+        set.add(new GroupEntry<String, Long>("a", 1L));
+        set.add(new GroupEntry<String, Long>("abc", 5L));
 
-        GroupEntry<String, Integer> ge1 = new GroupEntry<String, Integer>("abc", 10);
-        GroupEntry<String, Integer> ge2 = new GroupEntry<String, Integer>("abcd", 11);
+        GroupEntry<String, Long> ge1 = new GroupEntry<String, Long>("abc", 10L);
+        GroupEntry<String, Long> ge2 = new GroupEntry<String, Long>("abcd", 11L);
 
         System.out.println(set.contains(ge1)); 
         System.out.println(set.contains(ge2)); 

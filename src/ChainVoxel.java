@@ -47,12 +47,19 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
      */
     private TreeMap<String, Voxel> negativeVoxels;
 
+
+    /**
+     * 構造管理のためのStrutureTable
+     */
+    private StructureTable stt;
+
     /**
      * ChainVoxelのコンストラクタ
      */
     public ChainVoxel() {
         this.atoms = new TreeMap<String, ArrayList<Voxel>>();
         this.negativeVoxels = new TreeMap<String, Voxel>();
+        this.stt = new StructureTable();
     }
 
     /**
@@ -61,12 +68,24 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
      * @param op 操作オブジェクト
      */
     public void apply(Operation op) {
+        String posID = op.getPosID();
         switch (op.getOpType()) {
             case Operation.INSERT:
-                this.insert(op);      
+                if (this.stt.isGrouped(posID)) break;
+                this.insert(op);
                 break;
             case Operation.DELETE:
+                if (this.stt.isGrouped(posID)) break;
                 this.delete(op);
+                break;
+            case Operation.CREATE:
+                this.create(op);
+                break;
+            case Operation.JOIN:
+                this.join(op);
+                break;
+            case Operation.LEAVE:
+                this.leave(op);
                 break;
             default:
                 assert false;
@@ -128,6 +147,44 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
 
         Collections.sort(voxelList);
         return;
+    }
+
+    /**
+     * 指定したグループを作成するメソッド
+     * @param op 操作オブジェクト
+     * @see Operation
+     */
+    public void create(Operation op) {
+        String gid = (String) op.getParam("gid"); 
+        this.stt.create(gid);
+    }
+
+    /**
+     * 指定したグループにvoxelを参加させるメソッド
+     * @param op 操作オブジェクト
+     * @see Operation
+     */
+    public void join(Operation op) {
+        long ts = op.getTimestamp(); 
+        String posID = (String) op.getParam("posID"); 
+        String gid = (String) op.getParam("gid"); 
+
+        this.stt.join(ts, posID, gid);
+    }
+
+    /**
+     * 指定したグループからvoxelを脱退させるメソッド
+     * @param op 操作オブジェクト
+     * @see Operation
+     */
+    public void leave(Operation op) {
+        int sid = (int) op.getParam("sid"); 
+        long ts = op.getTimestamp(); 
+        String posID = (String) op.getParam("posID"); 
+        String gid = (String) op.getParam("gid"); 
+
+        this.stt.leave(sid, ts, posID, gid);
+        this.insert(op);
     }
 
     /**

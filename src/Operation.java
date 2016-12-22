@@ -1,7 +1,10 @@
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * 操作を表すクラス．<br>
  * Operationクラスを利用して，ChainVoxelクラスの操作を実行する．<br>
- * Operationクラスは内部状態の変更されてはいけないため，setterを実装しない．
+ * Operationクラスは内部状態の変更をされてはいけないため，setterを実装しない．
  * @author kengo92i
  */
 public class Operation {
@@ -14,6 +17,21 @@ public class Operation {
      * delete操作を示す定数
      */
     public static final int DELETE = 1;
+
+    /**
+     * create操作を示す定数
+     */
+    public static final int CREATE = 2;
+
+    /**
+     * join操作を示す定数
+     */
+    public static final int JOIN = 3;
+
+    /**
+     * leave操作を示す定数 
+     */
+    public static final int LEAVE = 4;
 
     /**
      * appendEntriesを示す定数（Raftのために使用）
@@ -48,13 +66,14 @@ public class Operation {
     /**
      * 操作を行なったSiteの識別子
      */
-    private int id;
+    private int id = -1;
 
     /**
      * 操作オブジェクトが表す操作を指定する整数．
-     * 操作タイプは{@link Operation#INSERT INSERT}と{@link Operation#DELETE DELETE}が存在．
+     * プリミティブ層の操作は{@link Operation#INSERT INSERT}と{@link Operation#DELETE DELETE}が存在．
+     * 構造層の操作は{@link Operation#CREATE CREATE}，{@link Operation#JOIN JOIN}と{@link Operation#LEAVE LEAVE}が存在．
      */
-    private int opType; // 0:insert, 1:delete
+    private int opType; // 0:insert, 1:delete, 2:create, 3:join, 4:leave
 
     /**
      * voxelの識別子を示す文字列（形式: "X:Y:Z"）
@@ -62,9 +81,20 @@ public class Operation {
     private String posID;
 
     /**
+     * groupの識別子を示す文字列（形式: v4 UUID）
+     */
+    private String gid;
+
+    /**
      * 操作のタイムスタンプ（作成時に自動的に設定される）
      */
     private long timestamp;
+
+
+    /**
+     * 操作のパラメータを保持するマップ
+     */
+    private Map<String, Object> params;
 
     /**
      * 指定されたタイプの操作オブジェクトを作成する．
@@ -79,6 +109,17 @@ public class Operation {
         this.timestamp = System.currentTimeMillis();
     }
 
+    /**
+     * 指定されたタイプの操作オブジェクトを作成する．(改良版)
+     * @param opType 操作のタイプ
+     * @param params パラメータを保持するマップ
+     */
+    public Operation(int opType, Map<String, Object> params) {
+        this.opType = opType;
+        this.params = params;
+        this.timestamp = System.currentTimeMillis();
+    }
+
     /* Not exist setter method. Because, class field should not be changed since init. */
 
     /**
@@ -86,7 +127,7 @@ public class Operation {
      * @return Siteの識別子
      */
     public int getId() {
-        return this.id;
+        return this.id != -1 ? this.id : (int) this.params.get("sid");
     }
 
     /**
@@ -102,7 +143,7 @@ public class Operation {
      * @return voxelの識別子
      */
     public String getPosID() {
-        return this.posID;
+        return this.posID != null ? this.posID : (String) this.params.get("posID");
     }
 
     /**
@@ -111,5 +152,14 @@ public class Operation {
      */
     public long getTimestamp() {
         return this.timestamp;
+    }
+
+    /**
+     * 指定したパラメータの値を取得する
+     * @param name パラメータ名
+     * @return パラメータの値
+     */
+    public Object getParam(String name) {
+        return this.params.get(name);
     }
 }
