@@ -51,7 +51,8 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
     /**
      * 構造管理のためのStrutureTable
      */
-    private StructureTable stt;
+    //private StructureTable stt;
+    public StructureTable stt;
 
     /**
      * ChainVoxelのコンストラクタ

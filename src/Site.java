@@ -1,6 +1,9 @@
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * Siteを表すクラス
@@ -133,8 +136,9 @@ public class Site extends Thread {
             Operation op = receive();
             chainVoxel.apply(op);
         }
-        // cv.show();
+        chainVoxel.show();
         chainVoxel.exportCollada(Integer.toString(this.id));
+        // System.out.println(chainVoxel.stt.getStatusString());
         return chainVoxel.size();
     }
 
@@ -147,16 +151,57 @@ public class Site extends Thread {
     }
 
     /**
+     * voxel識別子(posID)をランダムに生成するメソッド
+     * @return voxel識別子
+     */
+    private String generateRandomPosID() {
+        String x = Integer.toString(this.randomIntRange()); 
+        String y = Integer.toString(this.randomIntRange()); 
+        String z = Integer.toString(this.randomIntRange()); 
+        String posID = x + ":" + y + ":" + z;        
+        return posID;
+    }
+
+    /**
      * 操作をランダムに生成するメソッド
      * @return 操作オブジェクト
      */
     private Operation generateRandomOperation() {
         int opType = (new Random()).nextInt(2);
-        String x = Integer.toString(this.randomIntRange()); 
-        String y = Integer.toString(this.randomIntRange()); 
-        String z = Integer.toString(this.randomIntRange()); 
-        String posID = x + ":" + y + ":" + z;
+        String posID = this.generateRandomPosID();
         Operation op = new Operation(this.id, opType, posID);
+        return op;
+    }
+
+    /**
+     * 操作をランダムに生成するメソッド
+     * @return 操作オブジェクト
+     */
+    private Operation randomOperation() {
+        int opType = (new Random()).nextInt(5); 
+        Map<String, Object> params = new HashMap<String, Object>();
+
+        if (opType == Operation.INSERT || opType == Operation.DELETE) {
+            params.put("sid", this.id);
+            params.put("posID", this.generateRandomPosID());
+        }
+        else if (opType == Operation.CREATE) {
+            params.put("gid", UUID.randomUUID().toString());
+        }
+        else if (opType == Operation.JOIN) {
+            params.put("posID", this.generateRandomPosID()); 
+            params.put("gid", UUID.randomUUID().toString());
+        }
+        else if (opType == Operation.LEAVE) {
+            params.put("sid", this.id);
+            params.put("posID", this.generateRandomPosID());
+            params.put("gid", UUID.randomUUID().toString());
+        }
+        else {
+            assert false;
+        }
+
+        Operation op = new Operation(opType, params);
         return op;
     }
 
@@ -320,12 +365,31 @@ public class Site extends Thread {
         int numberOfSites = this.opq.getNumberOfSites();
         for (int i = 0; i < this.numberOfOperations; ++i) {
             Operation op = this.generateRandomOperation();
-            this.chainVoxel.apply(op); // local operation
+            this.send(this.id, op); // local operation
             this.broadcast(op); // remote operation
             this.numberOfSteps++;
             this.numberOfMessages += numberOfSites - 1;
         }
 
+        return;
+    }
+
+    /**
+     * ChainVoxelの構造層のテストをする
+     * @see ChainVoxel
+     * @see Operation
+     * @see StructureTable
+     */
+    private void runBehaviorOfChainVoxelForStructureLayer() {
+        int numberOfSites = this.opq.getNumberOfSites();
+        for (int i = 0; i < this.numberOfOperations; ++i) {
+            Operation op = this.randomOperation();
+            //this.send(this.id, op); // local operation
+            this.chainVoxel.apply(op); // local operation
+            this.broadcast(op); // remote operation
+            this.numberOfSteps++;
+            this.numberOfMessages += numberOfSites - 1;
+        }
         return;
     }
 
@@ -337,9 +401,11 @@ public class Site extends Thread {
     public void run() {    
         //this.delay();     
         
-        this.runBehaviorOfChainVoxel();
+        //this.runBehaviorOfChainVoxel();
         // this.runBehaviorOfTwoPhaseCommit();
         // this.runBehaviorOfRaft();        
+
+        this.runBehaviorOfChainVoxelForStructureLayer();
 
         return;
     }

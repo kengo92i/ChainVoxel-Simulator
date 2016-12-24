@@ -46,7 +46,7 @@ public class Simulator {
         this.numberOfOperations = Integer.parseInt(args[1]);
         this.limitOfRange = Integer.parseInt(args[2]);
         //while (this.numberOfSites <= 20) {
-        while (this.numberOfOperations <= 10000) {
+        while (this.numberOfOperations <= 100) {
 
             this.opq = new OperationQueue(numberOfSites);
 
@@ -77,14 +77,14 @@ public class Simulator {
                    sites.get(0).numberOfMessages);
                 */
                 
-                /*
+                
                 for (Site site : this.sites) {
                     int res = site.applyOperation();
                     System.out.println("site" + site.getSiteId() + ".size() = " + res);
                 }
-                */
-                int res = sites.get(0).applyOperation();
-                System.out.println(this.numberOfOperations * this.numberOfSites + " " + res);
+                
+                //int res = sites.get(0).applyOperation();
+                //System.out.println(this.numberOfOperations * this.numberOfSites + " " + res);
 
 
             } catch (RuntimeException re) {

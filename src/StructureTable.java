@@ -83,7 +83,8 @@ public class StructureTable {
      */
     public void leave(int sid, long ts, String posID, String gid) {
         GroupEntry<String, Long> aGroupEntry = new GroupEntry<String, Long>(gid, ts);
-        if (!this.groupEntriesTable.get(posID).contains(aGroupEntry) || Math.abs(this.getTimestamp(posID, gid)) >= ts) {
+        TreeSet<GroupEntry<String, Long>> groupEntriesSet = this.getGroupEntriesSet(posID);
+        if (groupEntriesSet == null || !groupEntriesSet.contains(aGroupEntry) || Math.abs(this.getTimestamp(posID, gid)) >= ts) {
             return;
         } 
 
@@ -177,6 +178,30 @@ public class StructureTable {
             }
         }
         return false;
+    }
+
+    /**
+     * StructureTableの状態を確認するための文字列を取得する
+     * 各siteのStructureTableの状態が同じであるか確認するために使用する
+     * @return StructureTableの状態を示す文字列
+     */
+    public String getStatusString() {
+        String statusString = "";
+        for (Map.Entry<String, TreeSet<String>> entry : this.groupMembersTable.entrySet()) {
+            statusString += entry.getKey(); 
+            for (String gid : entry.getValue()) {
+                statusString += gid;
+            }
+        }
+
+        for (Map.Entry<String, TreeSet<GroupEntry<String, Long>>> entry : this.groupEntriesTable.entrySet()) {
+            statusString += entry.getKey();
+            for (GroupEntry<String, Long> ge : entry.getValue()) {
+                statusString += ge.toString();
+            }
+        }
+
+        return statusString;
     }
 
     /**

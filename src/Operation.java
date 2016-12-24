@@ -1,3 +1,4 @@
+import java.lang.IllegalStateException;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -105,19 +106,43 @@ public class Operation {
     public Operation(int id, int opType, String posID) {
         this.id = id;
         this.opType = opType;
-        this.posID = posID;
         this.timestamp = System.currentTimeMillis();
+        this.posID = posID;
     }
 
     /**
      * 指定されたタイプの操作オブジェクトを作成する．(改良版)
+     * 操作を作成する場合は，操作の種類とパラメータ値を引数に与える．
+     * 操作に必要なパラメータが足りていない場合は異常終了させる．
      * @param opType 操作のタイプ
      * @param params パラメータを保持するマップ
      */
     public Operation(int opType, Map<String, Object> params) {
         this.opType = opType;
-        this.params = params;
         this.timestamp = System.currentTimeMillis();
+        params.put("ts", this.timestamp);
+        this.params = params;
+        if (!this.satisfyRequirements()) {
+            throw new IllegalStateException("Insufficient parameters for operation.");
+        }
+    }
+
+    private boolean satisfyRequirements() {
+        String[][] requirements = {
+            {"sid", "ts", "posID"}, // insert
+            {"sid", "ts", "posID"}, // delete
+            {"ts", "gid"}, // create
+            {"ts", "posID", "gid"}, // join
+            {"sid", "ts", "posID", "gid"} // leave
+        };
+
+        for (String requirement : requirements[this.opType]) {
+            if (!this.params.containsKey(requirement)) {
+               return false;
+            } 
+        }
+
+        return true;
     }
 
     /* Not exist setter method. Because, class field should not be changed since init. */
