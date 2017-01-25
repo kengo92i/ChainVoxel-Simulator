@@ -38,12 +38,12 @@ public class Site extends Thread {
     /**
      * ステップ数
      */
-    public int numberOfSteps;
+    private int numberOfSteps;
 
     /**
      * メッセージ総数
      */
-    public int numberOfMessages;
+    private int numberOfMessages;
 
     /**
      * 指定された操作数を実行するSiteを作成します．
@@ -113,6 +113,30 @@ public class Site extends Thread {
     public ChainVoxel getChainVoxel() {
         return this.chainVoxel;
     }
+
+    /**
+     * Siteが保持するメッセージ総数を取得する
+     * @return メッセージ総数
+     */
+    public int getNumberOfMessages() {
+        return this.numberOfMessages;
+    }
+
+    /**
+     * Siteが保持する操作の実行回数を取得する
+     * @return 操作の実行回数
+     */
+    public int getNumberOfOperations() {
+        return this.numberOfOperations;
+    }
+
+    /**
+     * Siteが保持するステップ数を取得する
+     * @return ステップ数
+     */
+    public int getNumberOfSteps() {
+        return this.numberOfSteps;
+    }
     
     /**
      * Siteに遅延を発生させるメソッド
@@ -163,7 +187,9 @@ public class Site extends Thread {
     }
 
     /**
-     * 操作をランダムに生成するメソッド
+     * 操作をランダムに生成するメソッド<br>
+     * プリミティブ層の操作にしか対応していない．
+     * @deprecated プリミティブ層以外の操作に対応 {@link #randomOperation}
      * @return 操作オブジェクト
      */
     private Operation generateRandomOperation() {
@@ -228,7 +254,9 @@ public class Site extends Thread {
      * <br>
      * 全ての操作をRaft に基づいて実行する．siteの故障は起きないためLeaderの選出は１度しか行わない．<br>
      * また，一貫性の収束にかかるステップ数とメッセージ数の評価が目的のため，ログレプリケーションやハートビートといった操作も考えない．<br>
-     * Raftの場合は全ての操作をLeaderを介して行うため，Leaderのメッセージ数を測定することで総メッセージ数が測定できる．
+     * Raftの場合は全ての操作をLeaderを介して行うため，Leaderのメッセージ数を測定することで総メッセージ数が測定できる．<br>
+     * <br>
+     * シミュレーション実行中のメッセージ総数は，「Leaderのメッセージ総数」で求めることができる (id=0のsite)．
      * @see Operation
      */
     private void runBehaviorOfRaft() {
@@ -303,7 +331,12 @@ public class Site extends Thread {
     /**
      * two-phase commit 時のsiteの振る舞いを実行する <br>
      * <br>
-     * 全ての操作を２層コミットに基づいて実行する．siteが故障することは考えない．
+     * 全ての操作を２層コミットに基づいて実行する．siteが故障することは考えない．<br>
+     * <br>
+     * siteIDの昇順で操作を実行する．最後のsiteの後は，最初のsiteから操作を実行する．<br>
+     * 操作実行を行うsiteが調停者の役割を担う．<br>
+     * <br>
+     * シミュレーション実行中のメッセージ総数は，「site毎のメッセージ総数 * site数」で求める
      * @see Operation
      */
     private void runBehaviorOfTwoPhaseCommit() {
@@ -357,7 +390,9 @@ public class Site extends Thread {
     }
 
     /**
-     * ChainVoxel時のSiteの振る舞いを実行する
+     * ChainVoxel時のSiteの振る舞いを実行する．<br>
+     * <br>
+     * シミュレーション実行中のメッセージ総数は，「site毎のメッセージ総数 * site数」で求める
      * @see ChainVoxel
      * @see Operation
      */
@@ -394,18 +429,18 @@ public class Site extends Thread {
     }
 
     /**
-     * Siteの動作を記述するメソッド
+     * Siteの動作を記述するメソッド．
      * {@inheritDoc}
      */
     @Override
     public void run() {    
-        //this.delay();     
+        // this.delay();     
         
-        //this.runBehaviorOfChainVoxel();
+        this.runBehaviorOfChainVoxel();
         // this.runBehaviorOfTwoPhaseCommit();
         // this.runBehaviorOfRaft();        
 
-        this.runBehaviorOfChainVoxelForStructureLayer();
+        // this.runBehaviorOfChainVoxelForStructureLayer();
 
         return;
     }

@@ -70,7 +70,7 @@ public class Operation {
     private int id = -1;
 
     /**
-     * 操作オブジェクトが表す操作を指定する整数．
+     * 操作オブジェクトが表す操作を指定する整数．<br>
      * プリミティブ層の操作は{@link Operation#INSERT INSERT}と{@link Operation#DELETE DELETE}が存在．
      * 構造層の操作は{@link Operation#CREATE CREATE}，{@link Operation#JOIN JOIN}と{@link Operation#LEAVE LEAVE}が存在．
      */
@@ -99,6 +99,7 @@ public class Operation {
 
     /**
      * 指定されたタイプの操作オブジェクトを作成する．
+     * @deprecated プリミティブ操作以外にも対応したコンストラクタ {@link #Operation(int, java.util.Map)}
      * @param id 操作を作成したSiteの識別子
      * @param opType 操作のタイプ
      * @param posID voxelの識別子
@@ -111,11 +112,12 @@ public class Operation {
     }
 
     /**
-     * 指定されたタイプの操作オブジェクトを作成する．(改良版)
+     * 指定されたタイプの操作オブジェクトを作成する．<br>
      * 操作を作成する場合は，操作の種類とパラメータ値を引数に与える．
-     * 操作に必要なパラメータが足りていない場合は異常終了させる．
+     * 操作に必要なパラメータを満たしていない場合は異常終了させる．
      * @param opType 操作のタイプ
      * @param params パラメータを保持するマップ
+     * @see Operation#satisfyRequirements
      */
     public Operation(int opType, Map<String, Object> params) {
         this.opType = opType;
@@ -127,6 +129,12 @@ public class Operation {
         }
     }
 
+    /**
+     * 必要なパラメータを満たしているか判定する． <br>
+     * 新しい操作を定義する場合は，操作に必要なパラメータ条件を追加する．
+     * 操作に必要なパラメータを満たしている場合はtrueを返す．満たしていない場合はfalseを返す．
+     * @return 操作に必要なパラメータを満たしているかの真偽値
+     */
     private boolean satisfyRequirements() {
         String[][] requirements = {
             {"sid", "ts", "posID"}, // insert

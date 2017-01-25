@@ -223,7 +223,7 @@ public class StructureTable {
 
     /**
      * Structure Table の状態を出力する
-     * @param ダンプメッセージ
+     * @param dumpMsg ダンプメッセージ
      */
     public void show(String dumpMsg) {
         System.out.println(dumpMsg);

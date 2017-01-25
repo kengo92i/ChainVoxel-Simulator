@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
- * Simulator上で共有される操作オブジェクトを管理するクラス
+ * Simulator上で共有される操作オブジェクトを管理するクラス <br>
  * Simulator上でSiteを作成する場合に，このクラスのインスタンスを渡すことで，操作の共有が行なえる．
  * @author kengo92i
  */

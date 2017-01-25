@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
  * <br>
  * negativeVoxelのvoxelチェインへの追加処理を簡略化するために，<br>
  * negativeVoxelをposIDに対応するvoxelチェインとは独立して管理する実装になっています．<br>
- * voxelチェインはこのクラスではvoxelのリストとして実装されています．
+ * voxelチェインはこのクラスではvoxelのリストとして実装されています．<br>
  * <br>
  * K. Imae and N. Hayashibara, 
  * “ChainVoxel: A Data Structure for Scalable Distributed Collaborative Editing for 3D Models” 
@@ -51,8 +51,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
     /**
      * 構造管理のためのStrutureTable
      */
-    //private StructureTable stt;
-    public StructureTable stt;
+    private StructureTable stt;
 
     /**
      * ChainVoxelのコンストラクタ
@@ -64,7 +63,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
     }
 
     /**
-     * 操作オブジェクトに対応する操作を実行するメソッド
+     * 操作オブジェクトに対応する操作を実行するメソッド．<br>
      * ChainVoxelに対する操作はapplyメソッドを用いて実行することを推奨しています．
      * @param op 操作オブジェクト
      */

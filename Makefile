@@ -3,7 +3,7 @@
 #
 # How to use simulator for ChainVoxel.
 # Type as below on Terminal.app.
-#     make
+#    make
 #    make test
 # or
 #    make
