@@ -89,7 +89,8 @@ public class Site extends Thread {
     }
     
     /**
-     * 操作オブジェクトを受信するメソッド
+     * 操作オブジェクトを受信するメソッド <br>
+     * receiveメソッドは受信した操作を１つ返します．受信した操作が空の場合は，nullを返す．
      * @return 操作オブジェクト
      * @see Operation
      * @see OperationQueue
@@ -240,7 +241,7 @@ public class Site extends Thread {
         Operation op = null; int count=0;
         ArrayList<Operation> operationList = new ArrayList<Operation>();
         while (count < num) {
-            if((op = receive()) != null) {
+            if ((op = receive()) != null) {
                 operationList.add(op);
                 count++;
             }
