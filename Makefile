@@ -10,7 +10,7 @@
 #    make test SITES=5 OPERATIONS=10 LIMIT=3
 #
 
-CURDIR	= Simulator
+CURDIR	= ChainVoxel-Simulator
 SRCDIR	= src
 OBJDIR	= bin
 JAVADOCDIR	= javadoc
