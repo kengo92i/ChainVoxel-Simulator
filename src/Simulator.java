@@ -23,7 +23,7 @@ public class Simulator {
     int numberOfOperations;
 
     /**
-     * ChainVoxelが扱う領域の最大値[-limitOfRange, limitOfRange]
+     * ChainVoxelが扱う領域の最大値 [-limitOfRange, limitOfRange]
      */
     int limitOfRange;
 

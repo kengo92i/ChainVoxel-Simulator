@@ -66,6 +66,7 @@ public class ChainVoxel extends CRDT<TreeMap<String, ArrayList<Voxel>>, Operatio
      * 操作オブジェクトに対応する操作を実行するメソッド．<br>
      * ChainVoxelに対する操作はapplyメソッドを用いて実行することを推奨しています．
      * @param op 操作オブジェクト
+     * @see Operation
      */
     public void apply(Operation op) {
         String posID = op.getPosID();

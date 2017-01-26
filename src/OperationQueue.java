@@ -51,7 +51,8 @@ public class OperationQueue {
     }
     
     /**
-     * 識別子に対応するQueueから操作オブジェクトをdequeueする．
+     * 識別子に対応するQueueから操作オブジェクトをdequeueする．<br>
+     * Queueの要素が空の場合はnullを返す
      * @param id Queueの識別子
      * @return 操作オブジェクト
      */
